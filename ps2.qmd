@@ -53,8 +53,8 @@ And see if you can figure out what range the likert scores are in. What's the hi
 summary(d$Game1Angry1)
 ```
 
-Highest number: [1]
-Lowest number: [7]
+Highest number: 7
+Lowest number: 1
 
 # cleaning up a bit
 
