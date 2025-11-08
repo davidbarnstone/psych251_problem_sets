@@ -58,7 +58,17 @@ The data are already tidy as provided by the authors.
 ## Pre-processing
 
 ```{r}
+# subset by station
+d_st_george = d %>% filter(STN_NAME == "STG")
+d_spadina = d %>% filter(STN_NAME == "SPAD")
+d_bloor_yonge = d %>% filter(STN_NAME == "B-Y")
+d_sherbourne = d %>% filter(STN_NAME == "SHER")
 
+# model the data
+model = lm(formula = DISTANCE ~ 1 + DIRECTION + STN_NAME + DIRECTION:STN_NAME, data = d)
+
+# get the residual sum of squares
+ss_residual = anova(model)["Residuals", "Sum Sq"]
 ```
 
 ## Inferential statistics
@@ -67,10 +77,19 @@ The data are already tidy as provided by the authors.
 
 ```{r test1}
 # reproduce the main effect of orientation
+anova(model)["DIRECTION", ]
+ss_direction = anova(model)["DIRECTION", "Sum Sq"]
+ss_direction / (ss_direction + ss_residual)
 
 # reproduce the main effect of station
+anova(model)["STN_NAME", ]
+ss_station = anova(model)["STN_NAME", "Sum Sq"]
+ss_station / (ss_station + ss_residual)
 
 # reproduce the interaction between orientation and station
+anova(model)["DIRECTION:STN_NAME", ]
+ss_interaction = anova(model)["DIRECTION:STN_NAME", "Sum Sq"]
+ss_interaction / (ss_interaction + ss_residual)
 
 ```
 
@@ -81,25 +100,41 @@ The data are already tidy as provided by the authors.
 #### St. George
 ```{r st-george}
 # reproduce results for St. George
-
+model_st_george = lm(DISTANCE ~ DIRECTION, data = d_st_george)
+anova(model_st_george)
+ss_st_george = anova(model_st_george)["DIRECTION", "Sum Sq"]
+ss_st_george_residual = anova(model_st_george)["Residuals", "Sum Sq"]
+ss_st_george / (ss_st_george + ss_st_george_residual)
 ```
 
 #### Spadina
 ```{r spadina}
 ## reproduce results for Spadina
-
+model_spadina = lm(DISTANCE ~ DIRECTION, data = d_spadina)
+anova(model_spadina)
+ss_spadina = anova(model_spadina)["DIRECTION", "Sum Sq"]
+ss_spadina_residual = anova(model_spadina)["Residuals", "Sum Sq"]
+ss_spadina / (ss_spadina + ss_spadina_residual)
 ```
 
 #### Bloor-Yonge
 ```{r bloor-yonge}
 ## reproduce results for Bloor-Yonge
-
+model_bloor_yonge = lm(DISTANCE ~ DIRECTION, data = d_bloor_yonge)
+anova(model_bloor_yonge)
+ss_bloor_yonge = anova(model_bloor_yonge)["DIRECTION", "Sum Sq"]
+ss_bloor_yonge_residual = anova(model_bloor_yonge)["Residuals", "Sum Sq"]
+ss_bloor_yonge / (ss_bloor_yonge + ss_bloor_yonge_residual)
 ```
 
 #### Sherbourne
 ```{r sherbourne}
 ## reproduce results for Sherbourne
-
+model_sherbourne = lm(DISTANCE ~ DIRECTION, data = d_sherbourne)
+anova(model_sherbourne)
+ss_sherbourne = anova(model_sherbourne)["DIRECTION", "Sum Sq"]
+ss_sherbourne_residual = anova(model_sherbourne)["Residuals", "Sum Sq"]
+ss_sherbourne / (ss_sherbourne + ss_sherbourne_residual)
 ```
 
 # Step 5: Reflection
@@ -114,5 +149,6 @@ How difficult was it to reproduce your results?
 
 What aspects made it difficult? What aspects made it easy?
 
-> ANSWER HERE
+> No data dictionary, had to guess what the variables were
+> Did not report F or t statistic in station-specific analyses
 
