@@ -1,5 +1,6 @@
 ---
 title: "Reproducibility Report: Group A Choice 2"
+author: "David Barnstone & Julia Proshan"
 output:
   html_document:
     toc: true
@@ -7,6 +8,8 @@ output:
 ---
 
 -------
+
+> *AI disclosure: We used ChatGPT and Claude to check our work.*
 
 For this exercise, please try to reproduce the results from Study 1 of the associated paper (Maglio & Polman, 2014). The PDF of the paper is included in the same folder as this Rmd file. 
 
@@ -32,10 +35,10 @@ options(stringsAsFactors = FALSE)
 # Step 1: Load packages
 
 ```{r}
-library(tidyverse) # for data munging
-library(knitr) # for kable table formating
-library(haven) # import and export 'SPSS', 'Stata' and 'SAS' Files
-library(readxl) # import excel files
+library(tidyverse)  # for data munging
+library(knitr)      # for kable table formating
+library(haven)      # import and export 'SPSS', 'Stata' and 'SAS' Files
+library(readxl)     # import excel files
 
 # #optional packages:
 # library(lsr)
@@ -65,7 +68,8 @@ d_bloor_yonge = d %>% filter(STN_NAME == "B-Y")
 d_sherbourne = d %>% filter(STN_NAME == "SHER")
 
 # model the data
-model = lm(formula = DISTANCE ~ 1 + DIRECTION + STN_NAME + DIRECTION:STN_NAME, data = d)
+model = lm(formula = DISTANCE ~ 1 + DIRECTION + STN_NAME +
+DIRECTION:STN_NAME, data = d)
 
 # get the residual sum of squares
 ss_residual = anova(model)["Residuals", "Sum Sq"]
@@ -141,14 +145,13 @@ ss_sherbourne / (ss_sherbourne + ss_sherbourne_residual)
 
 Were you able to reproduce the results you attempted to reproduce? If not, what part(s) were you unable to reproduce?
 
-> ANSWER HERE
+> Yes, the reproduced F-values, p-values, and effect sizes very closely match the original study's findings.
 
 How difficult was it to reproduce your results? 
 
-> ANSWER HERE
+> It was relatively straightforward to reproduce these results.
 
 What aspects made it difficult? What aspects made it easy?
 
-> No data dictionary, had to guess what the variables were
-> Did not report F or t statistic in station-specific analyses
+> The data was already tidy and the findings were clearly reported. However, the authors did not report the F or t statistics for their station-specific analyses. Also, the variable/column names (e.g. DISTANCE) and one of the station names (B-Y) were not written in a conventional, machine-readable format (i.e. using all lowercase and underscores). 
 

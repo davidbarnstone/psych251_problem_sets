@@ -75,7 +75,7 @@ In the paper, the adjusted means by condition are reported (see Table 4, or Tabl
 ```{r}
 
 emmeans(model_pitch_mean, ~ plev)
-es_model_pitch_mean <- effectsize::eta_squared(model_pitch_mean, partial = TRUE)
+es_model_pitch_mean <- effectsize::eta_squared(model_pitch_mean, partial)
 print(es_model_pitch_mean, digits = 6) #.02?
 
 emmeans(model_pitch_var, ~ plev)

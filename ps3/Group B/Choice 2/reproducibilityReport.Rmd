@@ -1,5 +1,6 @@
 ---
 title: "Reproducibility Report: Group B Choice 2"
+author: "David Barnstone & Julia Proshan"
 output:
   html_document:
     toc: true
@@ -7,6 +8,8 @@ output:
 ---
 
 -------
+
+> *AI disclosure: We used ChatGPT and Claude to check our work.*
 
 For this exercise, please try to reproduce the results from Experiment 1 of the associated paper (Ko, Sadler & Galinsky, 2015). The PDF of the paper is included in the same folder as this Rmd file. 
 
@@ -33,16 +36,17 @@ knitr::opts_chunk$set(echo=TRUE, warning=FALSE, message=FALSE)
 ## Step 1: Load packages
 
 ```{r}
-library(tidyverse) # for data munging
-library(knitr) # for kable table formating
-library(haven) # import and export 'SPSS', 'Stata' and 'SAS' Files
-library(readxl) # import excel files
+library(tidyverse)   # for data munging
+library(knitr)       # for kable table formating
+library(haven)       # import and export 'SPSS', 'Stata' and 'SAS' Files
+library(readxl)      # import excel files
 
 # #optional packages:
 # library(psych)
-# library(car) # for ANCOVA
+library(car)         # for ANCOVA
 # library(compute.es) # for ANCOVA
-# library(lsmeans) # for ANCOVA
+library(lsmeans)     # for ANCOVA
+library(effectsize)  # for calculating effect sizes
 ```
 
 ## Step 2: Load data
@@ -56,7 +60,12 @@ d <-read_csv("data/S1_voice_level_Final.csv")
 ## Step 3: Tidy data
 
 ```{r}
-
+d = d %>%
+  mutate(plev = factor(plev,
+                       levels = c(-1,1),
+                       labels = c("low", "high"))) %>%
+  rename("rank" = plev) %>% 
+  mutate(sex = as.factor(sex))
 ```
 
 ## Step 4: Run analysis
@@ -64,7 +73,31 @@ d <-read_csv("data/S1_voice_level_Final.csv")
 ### Pre-processing
 
 ```{r}
+# build models
 
+## pitch
+model_pitch_mean <- lm(formula = pitch_smean ~ 1 + rank + sex +
+                         pitch_rmean, data = d)
+
+## pitch variability
+model_pitch_var <- lm(formula = pitch_svar ~ 1 + rank + sex +
+                        pitch_rvar, data = d)
+
+## loudness
+model_loud_mean <- lm(formula = intense_smean ~ 1 + rank + sex +
+                        intense_rmean, data = d)
+
+## loudness variability
+model_loud_var <- lm(formula = intense_svar ~ 1 + rank + sex +
+                       intense_rvar, data = d)
+
+## resonance
+model_resonance_mean <- lm(formula = form_smean ~ 1 + rank + sex +
+                             form_rmean, data = d)
+
+## resonance variability
+model_resonance_var <- lm(formula =form_svar ~ 1 + rank + sex +
+                            form_rvar, data = d)
 ```
 
 ### Descriptive statistics
@@ -72,7 +105,31 @@ d <-read_csv("data/S1_voice_level_Final.csv")
 In the paper, the adjusted means by condition are reported (see Table 4, or Table4_AdjustedMeans.png, included in the same folder as this Rmd file). Reproduce these values below:
 
 ```{r}
+# calculate adjusted means and effect sizes
 
+## pitch
+emmeans(model_pitch_mean, ~ rank)
+eta_squared(model_pitch_mean, partial = TRUE)
+
+## pitch variability
+emmeans(model_pitch_var, ~ rank)
+eta_squared(model_pitch_var, partial = TRUE)
+
+## loudness
+emmeans(model_loud_mean, ~ rank)
+eta_squared(model_loud_mean, partial = TRUE)
+
+## loudness variability
+emmeans(model_loud_var, ~ rank)
+eta_squared(model_loud_var, partial = TRUE)
+
+## resonance
+emmeans(model_resonance_mean, ~ rank)
+eta_squared(model_resonance_mean, partial = TRUE)
+
+## resonance variability
+emmeans(model_resonance_var, ~ rank)
+eta_squared(model_resonance_var, partial = TRUE)
 ```
 
 ### Inferential statistics
@@ -81,19 +138,24 @@ In the paper, the adjusted means by condition are reported (see Table 4, or Tabl
 
 ```{r}
 # reproduce the above results here
-
+Anova(model_pitch_mean, type = 3)
+Anova(model_pitch_var, type = 3)
+Anova(model_loud_mean, type = 3)
+Anova(model_loud_var, type = 3)
+Anova(model_resonance_mean, type = 3)
+Anova(model_resonance_var, type = 3)
 ```
 
 # Step 5: Reflection
 
 Were you able to reproduce the results you attempted to reproduce? If not, what part(s) were you unable to reproduce?
 
-> ANSWER HERE
+> We were able to reproduce the reported means for all six acoustic cues. Our effect sizes differed slightly from those reported in the original paper, with those for pitch, pitch variability, loudness, and loudness variability being slightly larger in our reproduction. Our reproduced F and significance values were consistent, although did not match exactly, with the original paper.
 
 How difficult was it to reproduce your results? 
 
-> ANSWER HERE
+> It was moderatley difficult to reproduce these results.
 
 What aspects made it difficult? What aspects made it easy?
 
-> ANSWER HERE
+> The inclusion of a data dictionary was helpful in understanding the variables, although the naming conventions were confusing. It was also challenging to know exactly how they conducted their analyses (e.g. what software packages did they use?), which may explain the slight differences in some of our statistical outputs.
