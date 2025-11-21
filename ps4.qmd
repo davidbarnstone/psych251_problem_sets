@@ -74,13 +74,13 @@ In both conditions, older children paid more attention (as measured by looking t
 
 > What statistical analyses would you perform here to quantify these differences?
 
-ANSWER HERE
+I would use linear mixed-effects models to test the effects of age and condition on hand looking while accounting for nested structure of the data (i.e. repeated measures).
 
 
 # Part 2: Simulation
 
 ```{r, warning=F, message=F}
-
+# load tidyverse above
 ```
 
 Let's start by convincing ourselves that t-tests have the appropriate false positive rate. Run 10,000 t-tests with standard, normally-distributed data from a made up 30-person, single-measurement experiment (the command for sampling from a normal distribution is `rnorm`).
@@ -133,13 +133,31 @@ Consider this scenario: you have done an experiment, again with 30 participants 
 First, write a function that implements this sampling regime.
 
 ```{r}
-double.sample <- function() {
+double.sample <- function(initial_n = sample_size, additional_n = sample_size,
+                          true_mean = mean, true_sd = sd) {
+  sample_data <- rnorm(n = initial_n, mean = true_mean, sd = true_sd)
+  test_result <- t.test(sample_data, mu = 0)
+  p_value <- test_result$p.value
+  
+  if(p_value >= .05 & p_value < .25) {
+    additional_data <- rnorm(n = additional_n, mean = true_mean, sd = true_sd)
+    all_data <- c(sample_data, additional_data)
+    test_result <- t.test(all_data, mu = 0)
+    p_value <- test_result$p.value
+  }
+  return(p_value)
 }
+
+set.seed(123)
+double.sample()
 ```
 
 Now call this function 10k times and find out what happens. 
 
 ```{r}
+set.seed(1234)
+p_values <- replicate(n = n_simulations, expr = double.sample())
+mean(p_values < .05)
 ```
 
 Is there an inflation of false positives? How bad is it?
@@ -159,6 +177,36 @@ HINT: Try to do this by making the function `double.sample` take the upper p val
 HINT 2: You may need more samples. Find out by looking at how the results change from run to run.
 
 ```{r}
+double.sample <- function(initial_n = sample_size, additional_n = sample_size,
+                          true_mean = mean, true_sd = sd,
+                          upper_p_threshold = 0.25) {
+  sample_data <- rnorm(n = initial_n, mean = true_mean, sd = true_sd)
+  test_result <- t.test(sample_data, mu = 0)
+  p_value <- test_result$p.value
+  
+  if(p_value >= .05 & p_value < upper_p_threshold) {
+    additional_data <- rnorm(n = additional_n, mean = true_mean, sd = true_sd)
+    all_data <- c(sample_data, additional_data)
+    test_result <- t.test(all_data, mu = 0)
+    p_value <- test_result$p.value
+  }
+  return(p_value)
+}
+
+set.seed(1234)
+n_simulations = 50000
+
+df_results <- tibble(threshold = c(.25, .5, .75, 1)) %>%
+  rowwise() %>%
+  mutate(p_values = list(replicate(n = n_simulations,
+                                   expr = double.sample(
+                                     upper_p_threshold = threshold))),
+         false_positive_rate = mean(p_values < 0.05)) %>%
+  ungroup()
+
+
+df_results %>%
+  select(threshold, false_positive_rate)
 ```
 
 What do you conclude on the basis of this simulation? How bad is this kind of data-dependent policy?
