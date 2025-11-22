@@ -179,7 +179,7 @@ HINT 2: You may need more samples. Find out by looking at how the results change
 ```{r}
 double.sample <- function(initial_n = sample_size, additional_n = sample_size,
                           true_mean = mean, true_sd = sd,
-                          upper_p_threshold = 0.25) {
+                          upper_p_threshold = .25) {
   sample_data <- rnorm(n = initial_n, mean = true_mean, sd = true_sd)
   test_result <- t.test(sample_data, mu = 0)
   p_value <- test_result$p.value
@@ -201,9 +201,8 @@ df_results <- tibble(threshold = c(.25, .5, .75, 1)) %>%
   mutate(p_values = list(replicate(n = n_simulations,
                                    expr = double.sample(
                                      upper_p_threshold = threshold))),
-         false_positive_rate = mean(p_values < 0.05)) %>%
+         false_positive_rate = mean(p_values < .05)) %>%
   ungroup()
-
 
 df_results %>%
   select(threshold, false_positive_rate)

@@ -5,8 +5,7 @@ format: html
 
 # Introduction
 
-We're reproducing some data from Krefeld-Schwalb et al. (2024), "Exposing omitted moderators: Explaining why effect sizes differ in the social sciences." 
-We're going to look only at Study 1A, and focus on the sunk cost judgment task.
+We're reproducing some data from Krefeld-Schwalb et al. (2024), "Exposing omitted moderators: Explaining why effect sizes differ in the social sciences." We're going to look only at Study 1A, and focus on the sunk cost judgment task.
 
 OSF repo: https://osf.io/7kqg9/files
 
@@ -17,11 +16,12 @@ library(janitor)
 library(metafor)
 d <- read_csv(here("data","Study1A_prepared.csv"))
 ```
-First let's learn about the dataset. 
 
-> In Study 1a, we tested four paradigms on eight online panels (detailed information can be found in SI Appendix, section 1.1): The default effect [organ donation (47)], the framing effect [unusual disease (48)], the less-is-better effect (49), and the sunk cost effect (50). We collected demographic variables (gender, age, income, and political orientation), Crystallized Intelligence (education, age), Fluid Intelligence (the cognitive reflection task and numeracy (31, 32), Experience with each paradigm and online research in general, and measures of Attentiveness (response times), as well as two attention checks. In addition to panels that are ubiquitous in academic research (MTurk, Cloud Research, and Prolific), we used commercial providers that vary in quality (four distinct panels and a blended panel from Lucid Marketplace).
+First let's learn about the dataset.
 
-Let's use the `janitor` package to clean up. 
+> In Study 1a, we tested four paradigms on eight online panels (detailed information can be found in SI Appendix, section 1.1): The default effect \[organ donation (47)\], the framing effect \[unusual disease (48)\], the less-is-better effect (49), and the sunk cost effect (50). We collected demographic variables (gender, age, income, and political orientation), Crystallized Intelligence (education, age), Fluid Intelligence (the cognitive reflection task and numeracy (31, 32), Experience with each paradigm and online research in general, and measures of Attentiveness (response times), as well as two attention checks. In addition to panels that are ubiquitous in academic research (MTurk, Cloud Research, and Prolific), we used commercial providers that vary in quality (four distinct panels and a blended panel from Lucid Marketplace).
+
+Let's use the `janitor` package to clean up.
 
 ```{r}
 d <- janitor::clean_names(d)
@@ -30,6 +30,7 @@ d <- janitor::clean_names(d)
 ```{r}
 names(d)
 ```
+
 ```{r}
 unique(d$panel)
 ```
@@ -40,35 +41,52 @@ Let's start with the sunk cost stimuli:
 
 ```{r}
 sunk_means <- d |>
-  group_by(...) |>
-  summarise(...)
-
+  group_by(panel, sunk_condition) |>
+  summarise(mean = mean(num_sunk_cost),
+            sd = sd(num_sunk_cost),
+            n = n())
+sunk_means
 ```
 
 Now let's make a nice plot of site variation.
 
 ```{r}
-ggplot(...) 
+ggplot(data = d,
+       mapping = aes(x = panel,
+                     y = num_sunk_cost,
+                     group = sunk_condition,
+                     col = sunk_condition)) +
+  stat_summary(fun.data = "mean_cl_boot",
+               position = position_dodge(width = .8)) +
+  theme_minimal() +
+  theme(axis.line = element_line(),
+        axis.text.x = element_text(angle = 60, vjust = -.01)) +
+  coord_flip() +
+  fct_reorder
 ```
-There is indeed heterogeneity!
 
+There is indeed heterogeneity!
 
 # Participant level analysis
 
-Let's start by looking at the participant level. First we'll look at the CRT and BNT as moderators.  
+Let's start by looking at the participant level. First we'll look at the CRT and BNT as moderators.
 
-My hypothesis is that the BNT is the Berlin numeracy test. 
+My hypothesis is that the BNT is the Berlin numeracy test.
 
 ```{r}
-ggplot(d, aes(...)) + 
+d |> 
+  select(crt = crt_score, bnt, num_sunk_cost) |> 
+  pivot_longer(names_to = "moderators",
+               values_to = "")
+ggplot(d, aes(x = )) + 
   ...
 ```
 
 # Panel-level analysis
 
-The approach that's taken in the paper is to explain panel variation by average panel differences. 
+The approach that's taken in the paper is to explain panel variation by average panel differences.
 
-This part is a little tricky so I've included it. (There's probably a better way to do the effect sizes). 
+This part is a little tricky so I've included it. (There's probably a better way to do the effect sizes).
 
 ```{r}
 sunk_effect <- d |>
@@ -89,7 +107,7 @@ sunk_effect <- summary(metafor::escalc(data = sunk_effect, measure = "SMD",
                                    n1i = n1i, n2i = n2i))
 ```
 
-Effect size plot. 
+Effect size plot.
 
 ```{r}
 ggplot(sunk_effect, aes(...)) + 
@@ -97,9 +115,8 @@ ggplot(sunk_effect, aes(...)) +
 
 ```
 
-How would we make this figure across multiple moderators? 
+How would we make this figure across multiple moderators?
 
 ```{r}
 ...
 ```
-
