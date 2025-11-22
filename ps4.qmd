@@ -1,11 +1,13 @@
 ---
 title: 'Psych 251 PS4: Simulation + Analysis'
-author: "David Barnstone"
+author: "David Barnstone & Julia Proshan"
 date: "November 2025"
 format: 
   html:
     toc: true
 ---
+
+> *AI disclosure: We used ChatGPT and Claude to check our work.*
 
 This is problem set #4, in which we want you to integrate your knowledge of data wrangling with some basic simulation skills. It's a short problem set to help consolidate your `ggplot2` skills and then help you get your feet wet in testing statistical concepts through "making up data" rather than consulting a textbook or doing math. 
 
@@ -47,7 +49,7 @@ fvs %>%
 
 Second, make a scatter plot showing hand looking as a function of age and condition. Add appropriate smoothing lines. Take the time to fix the axis labels and make the plot look nice.
 
-```{r}
+```{r, message = FALSE}
 ggplot(data = fvs,
        mapping = aes(x = age,
                      y = hand.look,
@@ -92,8 +94,10 @@ What's the proportion of "significant" results ($p < .05$) that you see?
 First do this using a `for` loop.
 
 ```{r}
+# for reproducibility
 set.seed(1234)
 
+# set parameters
 n_simulations = 10000
 sample_size = 30
 mean = 0
@@ -114,6 +118,7 @@ mean(p_values < alpha)
 Next, do this using the `replicate` function:
 
 ```{r}
+# for reproducibility
 set.seed(1234)
 
 p_values <- replicate(n = n_simulations, expr = {
@@ -124,7 +129,7 @@ mean(p_values < alpha)
 
 > How does this compare to the intended false-positive rate of $\alpha=0.05$?
 
-The calculated false positive rate is nearly identical.
+The calculated false positive rate (0.0488) is nearly identical.
 
 Ok, that was a bit boring. Let's try something more interesting - let's implement a p-value sniffing simulation, in the style of Simons, Nelson, & Simonsohn (2011).
 
@@ -147,22 +152,21 @@ double.sample <- function(initial_n = sample_size, additional_n = sample_size,
   }
   return(p_value)
 }
-
-set.seed(123)
-double.sample()
 ```
 
 Now call this function 10k times and find out what happens. 
 
 ```{r}
+# for reproducibility
 set.seed(1234)
+
 p_values <- replicate(n = n_simulations, expr = double.sample())
 mean(p_values < .05)
 ```
 
-Is there an inflation of false positives? How bad is it?
+> Is there an inflation of false positives? How bad is it?
 
-> ANSWER
+Yes, the false positive rate increased from 5% to 7.2%.
 
 Now modify this code so that you can investigate this "double the sample" rule in a bit more depth. In the previous question, the researcher doubles the sample only when they think they got "close" to a significant result, i.e. when their not-significant p is less than 0.25. What if the researcher was more optimistic? See what happens in these 3 other scenarios:
 
@@ -193,7 +197,10 @@ double.sample <- function(initial_n = sample_size, additional_n = sample_size,
   return(p_value)
 }
 
+# for reproducibility
 set.seed(1234)
+
+# increase number of simulations
 n_simulations = 50000
 
 df_results <- tibble(threshold = c(.25, .5, .75, 1)) %>%
@@ -208,6 +215,6 @@ df_results %>%
   select(threshold, false_positive_rate)
 ```
 
-What do you conclude on the basis of this simulation? How bad is this kind of data-dependent policy?
+> What do you conclude on the basis of this simulation? How bad is this kind of data-dependent policy?
 
-> ANSWER
+The false positive rate is progressively greater than .05 for all threshold levels. This suggests optional stopping always increases the risk of detecting a false positive.
